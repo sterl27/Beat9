@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Beat Studio Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e2e8f0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #334155;
+            padding: 15px 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(168,85,247,0.2) 0%, rgba(236,72,153,0.2) 50%, rgba(6,182,212,0.2) 100%);
+            animation: gradientShift 8s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background: linear-gradient(90deg, rgba(168,85,247,0.2) 0%, rgba(236,72,153,0.2) 50%, rgba(6,182,212,0.2) 100%); }
+            33% { background: linear-gradient(90deg, rgba(6,182,212,0.2) 0%, rgba(168,85,247,0.2) 50%, rgba(236,72,153,0.2) 100%); }
+            66% { background: linear-gradient(90deg, rgba(236,72,153,0.2) 0%, rgba(6,182,212,0.2) 50%, rgba(168,85,247,0.2) 100%); }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status-indicators {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-indicator {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .status-live {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.5);
+            color: #22c55e;
+        }
+
+        .status-offline {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+            color: #ef4444;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .status-live .status-dot {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        /* API Key Section */
+        .api-section {
+            background: rgba(30, 41, 59, 0.7);
+            border-bottom: 1px solid #334155;
+            padding: 12px 20px;
+        }
+
+        .api-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .api-key-input {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #e2e8f0;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .api-key-input:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left Panel - Beat Sequencer */
+        .left-panel {
+            width: 400px;
+            background: rgba(30, 41, 59, 0.7);
+            border-right: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* Transport Controls */
+        .transport-controls {
+            padding: 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .transport-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .transport-btn {
+            background: linear-gradient(135deg, #4338ca, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .transport-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(67, 56, 202, 0.3);
+        }
+
+        .transport-btn.playing {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+        }
+
+        .bpm-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .bpm-input {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #475569;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: #e2e8f0;
+            width: 80px;
+            text-align: center;
+        }
+
+        /* Sequencer Grid */
+        .sequencer-section {
+            padding: 20px;
+            flex: 1;
+        }
+
+        .track {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .track-info {
+            width: 100px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .track-name {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .track-controls {
+            display: flex;
+            gap: 4px;
+            margin-right: 8px;
+        }
+
+        .track-btn {
+            background: rgba(71, 85, 105, 0.6);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .track-btn:hover {
+            background: rgba(71, 85, 105, 0.8);
+        }
+
+        .track-btn.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .step-grid {
+            display: flex;
+            gap: 2px;
+        }
+
+        .step {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #475569;
+            background: rgba(15, 23, 42, 0.6);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .step.active {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-color: #1e40af;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+        }
+
+        .step.current {
+            border-color: #fbbf24;
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.8);
+        }
+
+        .step:hover {
+            transform: scale(1.1);
+        }
+
+        /* Center Panel - Visualizer */
+        .center-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(15, 23, 42, 0.3);
+        }
+
+        .visualizer-container {
+            height: 300px;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+            border-bottom: 1px solid #334155;
+            overflow: hidden;
+        }
+
+        .visualizer-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            scroll-behavior: smooth;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+
+        .welcome-message h2 {
+            color: #f1f5f9;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .quick-action-btn {
+            background: linear-gradient(135deg, #4338ca, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(67, 56, 202, 0.3);
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #4338ca, #7c3aed);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 8px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 15px 20px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            max-width: 100px;
+            margin-bottom: 20px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #60a5fa;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Chat Input */
+        .chat-input-container {
+            background: rgba(30, 41, 59, 0.8);
+            border-top: 1px solid #334155;
+            padding: 20px;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: #e2e8f0;
+            font-size: 14px;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Right Panel - Effects */
+        .right-panel {
+            width: 300px;
+            background: rgba(30, 41, 59, 0.7);
+            border-left: 1px solid #334155;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .effects-section h3 {
+            margin-bottom: 15px;
+            color: #f1f5f9;
+            font-size: 1.1rem;
+        }
+
+        .effect-knob {
+            margin-bottom: 20px;
+        }
+
+        .knob-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .knob-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin: 0 auto;
+        }
+
+        .knob {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 70%);
+            border: 3px solid #334155;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .knob:hover {
+            border-color: #60a5fa;
+            box-shadow: 0 0 15px rgba(96, 165, 250, 0.3);
+        }
+
+        .knob::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 15px;
+            background: #60a5fa;
+            border-radius: 2px;
+            transform-origin: 50% 25px;
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 6px;
+            background: rgba(71, 85, 105, 0.6);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .left-panel,
+            .right-panel {
+                width: 100%;
+                max-height: 250px;
+            }
+
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .transport-buttons {
+                flex-wrap: wrap;
+            }
+
+            .status-indicators {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(71, 85, 105, 0.8);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(71, 85, 105, 1);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1>🚀 Ultimate Beat Studio Pro</h1>
+                <div class="status-indicators">
+                    <div id="playbackStatus" class="status-indicator status-offline">
+                        <div class="status-dot"></div>
+                        <span>OFFLINE</span>
+                    </div>
+                    <div id="bpmDisplay" class="status-indicator" style="background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.5); color: #a855f7;">
+                        <span>128 BPM</span>
+                    </div>
+                    <div id="beatStateStatus" class="status-indicator" style="background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.5); color: #a855f7; display: none;">
+                        <span>🧠 AI Context</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Key Section -->
+        <div class="api-section">
+            <div class="api-container">
+                <input 
+                    type="password" 
+                    id="apiKey" 
+                    class="api-key-input" 
+                    placeholder="Enter your OpenAI API Key to enable AI beat generation..."
+                >
+                <div class="status-indicator" id="connectionStatus">
+                    <div class="status-dot"></div>
+                    <span>Disconnected</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel - Beat Sequencer -->
+            <div class="left-panel">
+                <!-- Transport Controls -->
+                <div class="transport-controls">
+                    <div class="transport-buttons">
+                        <button id="playBtn" class="transport-btn">▶ Play</button>
+                        <button id="stopBtn" class="transport-btn">⏹ Stop</button>
+                        <button id="recordBtn" class="transport-btn">⏺ Record</button>
+                    </div>
+                    <div class="bpm-control">
+                        <label for="bpmSlider">BPM:</label>
+                        <input type="range" id="bpmSlider" min="60" max="200" value="128" class="volume-slider">
+                        <input type="number" id="bpmInput" class="bpm-input" value="128" min="60" max="200">
+                    </div>
+                    <div class="bpm-control">
+                        <label for="masterVolume">Master:</label>
+                        <input type="range" id="masterVolume" min="0" max="100" value="80" class="volume-slider">
+                    </div>
+                </div>
+
+                <!-- Sequencer Grid -->
+                <div class="sequencer-section">
+                    <h3 style="color: #f1f5f9; margin-bottom: 15px;">16-Step Sequencer</h3>
+                    <div id="trackContainer">
+                        <!-- Tracks will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Panel - Visualizer & Chat -->
+            <div class="center-panel">
+                <!-- Visualizer -->
+                <div class="visualizer-container">
+                    <canvas id="visualizerCanvas" class="visualizer-canvas"></canvas>
+                    <canvas id="particleCanvas" class="visualizer-canvas"></canvas>
+                </div>
+
+                <!-- Chat Container -->
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="welcome-message">
+                            <h2>Ultimate Beat Studio Pro</h2>
+                            <p>Create professional beats with AI assistance, multi-track sequencing, real-time effects, and spectacular visualizations!</p>
+                            
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" onclick="sendQuickMessage('Create a trap beat with heavy 808s and rolling hi-hats')">
+                                    ⚡ Generate Trap Beat
+                                </button>
+                                <button class="quick-action-btn" onclick="sendQuickMessage('Give me mixing tips for punchy drums')">
+                                    🎛️ Mixing Tips
+                                </button>
+                                <button class="quick-action-btn" onclick="sendQuickMessage('Suggest creative pattern variations')">
+                                    ✨ Pattern Ideas
+                                </button>
+                                <button class="quick-action-btn" onclick="sendQuickMessage('How do I create dynamic arrangements?')">
+                                    🎵 Arrangement Tips
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-container">
+                        <div class="chat-input-wrapper">
+                            <textarea 
+                                id="chatInput" 
+                                class="chat-input" 
+                                placeholder="Ask about beat production, request patterns, get mixing advice..."
+                                rows="1"
+                                disabled
+                            ></textarea>
+                            <button id="sendBtn" class="send-btn" onclick="sendMessage()" disabled>
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Effects -->
+            <div class="right-panel">
+                <div class="effects-section">
+                    <h3>Track Effects</h3>
+                    <div id="selectedTrackName" style="color: #94a3b8; margin-bottom: 20px;">Select a track</div>
+                    
+                    <div class="effect-knob">
+                        <div class="knob-label">
+                            <span>Reverb</span>
+                            <span id="reverbValue">0%</span>
+                        </div>
+                        <div class="knob-container">
+                            <div class="knob" id="reverbKnob"></div>
+                        </div>
+                        <input type="range" id="reverbSlider" min="0" max="100" value="0" class="volume-slider" style="margin-top: 10px;">
+                    </div>
+
+                    <div class="effect-knob">
+                        <div class="knob-label">
+                            <span>Delay</span>
+                            <span id="delayValue">0%</span>
+                        </div>
+                        <div class="knob-container">
+                            <div class="knob" id="delayKnob"></div>
+                        </div>
+                        <input type="range" id="delaySlider" min="0" max="100" value="0" class="volume-slider" style="margin-top: 10px;">
+                    </div>
+
+                    <div class="effect-knob">
+                        <div class="knob-label">
+                            <span>Filter</span>
+                            <span id="filterValue">50%</span>
+                        </div>
+                        <div class="knob-container">
+                            <div class="knob" id="filterKnob"></div>
+                        </div>
+                        <input type="range" id="filterSlider" min="0" max="100" value="50" class="volume-slider" style="margin-top: 10px;">
+                    </div>
+
+                    <div class="effect-knob">
+                        <div class="knob-label">
+                            <span>Distortion</span>
+                            <span id="distortionValue">0%</span>
+                        </div>
+                        <div class="knob-container">
+                            <div class="knob" id="distortionKnob"></div>
+                        </div>
+                        <input type="range" id="distortionSlider" min="0" max="100" value="0" class="volume-slider" style="margin-top: 10px;">
+                    </div>
+
+                    <div class="effect-knob">
+                        <div class="knob-label">
+                            <span>Volume</span>
+                            <span id="volumeValue">80%</span>
+                        </div>
+                        <input type="range" id="volumeSlider" min="0" max="100" value="80" class="volume-slider">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state management
+        const state = {
+            isPlaying: false,
+            currentStep: 0,
+            bpm: 128,
+            masterVolume: 0.8,
+            selectedTrack: 0,
+            tracks: [
+                {
+                    name: 'Kick',
+                    pattern: Array(16).fill(false),
+                    volume: 0.8,
+                    muted: false,
+                    soloed: false,
+                    instrument: 'kick',
+                    effects: { reverb: 0, delay: 0, filter: 50, distortion: 0 }
+                },
+                {
+                    name: 'Snare',
+                    pattern: Array(16).fill(false),
+                    volume: 0.7,
+                    muted: false,
+                    soloed: false,
+                    instrument: 'snare',
+                    effects: { reverb: 20, delay: 0, filter: 70, distortion: 10 }
+                },
+                {
+                    name: 'Hi-Hat',
+                    pattern: Array(16).fill(false),
+                    volume: 0.5,
+                    muted: false,
+                    soloed: false,
+                    instrument: 'hihat',
+                    effects: { reverb: 10, delay: 30, filter: 80, distortion: 0 }
+                },
+                {
+                    name: 'Bass',
+                    pattern: Array(16).fill(false),
+                    volume: 0.6,
+                    muted: false,
+                    soloed: false,
+                    instrument: 'bass',
+                    effects: { reverb: 0, delay: 0, filter: 30, distortion: 20 }
+                },
+                {
+                    name: 'Melody',
+                    pattern: Array(16).fill(false),
+                    volume: 0.4,
+                    muted: false,
+                    soloed: false,
+                    instrument: 'melody',
+                    effects: { reverb: 40, delay: 20, filter: 60, distortion: 0 }
+                },
+                {
+                    name: 'Perc',
+                    pattern: Array(16).fill(false),
+                    volume: 0.5,
+                    muted: false,
+                    soloed: false,
+                    instrument: 'perc',
+                    effects: { reverb: 30, delay: 10, filter: 50, distortion: 10 }
+                }
+            ],
+            chatMessages: [],
+            isLoadingResponse: false,
+            currentThreadId: null
+        };
+
+        // Audio context and nodes
+        let audioContext = null;
+        let analyser = null;
+        let beatInterval = null;
+        let particles = [];
+
+        // Instrument definitions
+        const INSTRUMENTS = {
+            kick: { freq: 60, type: 'sine', decay: 0.5, emoji: '🥾' },
+            snare: { freq: 200, type: 'square', decay: 0.2, emoji: '🥁' },
+            hihat: { freq: 8000, type: 'square', decay: 0.1, emoji: '🔸' },
+            bass: { freq: 80, type: 'sawtooth', decay: 0.3, emoji: '🎸' },
+            melody: { freq: 440, type: 'triangle', decay: 0.3, emoji: '🎹' },
+            perc: { freq: 1000, type: 'square', decay: 0.15, emoji: '🪘' }
+        };
+
+        // Initialize audio context
+        function initializeAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.connect(audioContext.destination);
+                analyser.fftSize = 2048;
+                analyser.smoothingTimeConstant = 0.8;
+
+                // Initialize particles for visualization
+                particles = Array.from({ length: 50 }, (_, i) => ({
+                    id: i,
+                    x: Math.random() * 800,
+                    y: Math.random() * 300,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    size: Math.random() * 4 + 1,
+                    opacity: Math.random() * 0.7 + 0.3,
+                    hue: Math.random() * 360
+                }));
+            }
+        }
+
+        // Play track sound with enhanced synthesis
+        function playTrackSound(trackIndex, velocity = 1) {
+            if (!audioContext) return;
+            
+            const track = state.tracks[trackIndex];
+            const instrument = INSTRUMENTS[track.instrument];
+            
+            // Create audio nodes
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+            
+            // Configure oscillator
+            oscillator.type = instrument.type;
+            oscillator.frequency.setValueAtTime(instrument.freq, audioContext.currentTime);
+            
+            // Configure filter based on effect settings
+            filter.type = 'lowpass';
+            filter.frequency.value = 200 + (track.effects.filter / 100) * 8000;
+            filter.Q.value = 10;
+            
+            // Audio routing
+            oscillator.connect(filter);
+            filter.connect(gain);
+            
+            if (analyser) {
+                gain.connect(analyser);
+            }
+            
+            // Configure gain envelope
+            const baseVolume = (track.volume / 100) * velocity * state.masterVolume;
+            gain.gain.setValueAtTime(baseVolume, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + instrument.decay);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 1.0);
+        }
+
+        // Toggle step in pattern
+        function toggleStep(trackIndex, stepIndex) {
+            state.tracks[trackIndex].pattern[stepIndex] = !state.tracks[trackIndex].pattern[stepIndex];
+            updateSequencerDisplay();
+            
+            // Play sound if step was activated
+            if (state.tracks[trackIndex].pattern[stepIndex]) {
+                playTrackSound(trackIndex);
+            }
+        }
+
+        // Transport control functions
+        function togglePlayback() {
+            if (state.isPlaying) {
+                stopPlayback();
+            } else {
+                startPlayback();
+            }
+        }
+
+        function startPlayback() {
+            initializeAudio();
+            state.isPlaying = true;
+            state.currentStep = 0;
+            
+            const stepDuration = (60 / state.bpm / 4) * 1000;
+            
+            beatInterval = setInterval(() => {
+                // Play sounds for active tracks
+                state.tracks.forEach((track, trackIndex) => {
+                    if (track.pattern[state.currentStep] && !track.muted) {
+                        playTrackSound(trackIndex);
+                    }
+                });
+                
+                // Update visualizer
+                updateVisualizer();
+                
+                // Advance step
+                state.currentStep = (state.currentStep + 1) % 16;
+                updateSequencerDisplay();
+            }, stepDuration);
+            
+            updateTransportDisplay();
+        }
+
+        function stopPlayback() {
+            state.isPlaying = false;
+            state.currentStep = 0;
+            
+            if (beatInterval) {
+                clearInterval(beatInterval);
+                beatInterval = null;
+            }
+            
+            updateTransportDisplay();
+            updateSequencerDisplay();
+        }
+
+        // Update transport display
+        function updateTransportDisplay() {
+            const playBtn = document.getElementById('playBtn');
+            const playbackStatus = document.getElementById('playbackStatus');
+            
+            if (state.isPlaying) {
+                playBtn.textContent = '⏸ Pause';
+                playBtn.classList.add('playing');
+                playbackStatus.className = 'status-indicator status-live';
+                playbackStatus.innerHTML = '<div class="status-dot"></div><span>LIVE</span>';
+            } else {
+                playBtn.textContent = '▶ Play';
+                playBtn.classList.remove('playing');
+                playbackStatus.className = 'status-indicator status-offline';
+                playbackStatus.innerHTML = '<div class="status-dot"></div><span>OFFLINE</span>';
+            }
+        }
+
+        // Update sequencer display
+        function updateSequencerDisplay() {
+            const trackContainer = document.getElementById('trackContainer');
+            trackContainer.innerHTML = '';
+            
+            state.tracks.forEach((track, trackIndex) => {
+                const trackDiv = document.createElement('div');
+                trackDiv.className = 'track';
+                
+                trackDiv.innerHTML = `
+                    <div class="track-info">
+                        <span style="font-size: 16px;">${INSTRUMENTS[track.instrument].emoji}</span>
+                        <span class="track-name">${track.name}</span>
+                    </div>
+                    <div class="track-controls">
+                        <button class="track-btn ${track.muted ? 'active' : ''}" onclick="toggleMute(${trackIndex})">M</button>
+                        <button class="track-btn ${track.soloed ? 'active' : ''}" onclick="toggleSolo(${trackIndex})">S</button>
+                        <button class="track-btn ${state.selectedTrack === trackIndex ? 'active' : ''}" onclick="selectTrack(${trackIndex})">E</button>
+                    </div>
+                    <div class="step-grid" id="track-${trackIndex}">
+                        ${track.pattern.map((active, stepIndex) => 
+                            `<div class="step ${active ? 'active' : ''} ${state.currentStep === stepIndex && state.isPlaying ? 'current' : ''}" 
+                                  onclick="toggleStep(${trackIndex}, ${stepIndex})"></div>`
+                        ).join('')}
+                    </div>
+                `;
+                
+                trackContainer.appendChild(trackDiv);
+            });
+            
+            // Update beat state status indicator
+            updateBeatStateStatus(false);
+        }
+
+        // Track control functions
+        function toggleMute(trackIndex) {
+            state.tracks[trackIndex].muted = !state.tracks[trackIndex].muted;
+            updateSequencerDisplay();
+        }
+
+        function toggleSolo(trackIndex) {
+            state.tracks[trackIndex].soloed = !state.tracks[trackIndex].soloed;
+            updateSequencerDisplay();
+        }
+
+        function selectTrack(trackIndex) {
+            state.selectedTrack = trackIndex;
+            updateSequencerDisplay();
+            updateEffectsPanel();
+        }
+
+        // Update effects panel
+        function updateEffectsPanel() {
+            const track = state.tracks[state.selectedTrack];
+            document.getElementById('selectedTrackName').textContent = `${INSTRUMENTS[track.instrument].emoji} ${track.name}`;
+            
+            // Update effect sliders and displays
+            document.getElementById('reverbSlider').value = track.effects.reverb;
+            document.getElementById('reverbValue').textContent = track.effects.reverb + '%';
+            
+            document.getElementById('delaySlider').value = track.effects.delay;
+            document.getElementById('delayValue').textContent = track.effects.delay + '%';
+            
+            document.getElementById('filterSlider').value = track.effects.filter;
+            document.getElementById('filterValue').textContent = track.effects.filter + '%';
+            
+            document.getElementById('distortionSlider').value = track.effects.distortion;
+            document.getElementById('distortionValue').textContent = track.effects.distortion + '%';
+            
+            document.getElementById('volumeSlider').value = Math.round(track.volume * 100);
+            document.getElementById('volumeValue').textContent = Math.round(track.volume * 100) + '%';
+            
+            updateKnobPositions();
+        }
+
+        // Update visual knob positions
+        function updateKnobPositions() {
+            const track = state.tracks[state.selectedTrack];
+            const effects = ['reverb', 'delay', 'filter', 'distortion'];
+            
+            effects.forEach(effect => {
+                const knob = document.getElementById(effect + 'Knob');
+                const value = track.effects[effect];
+                const angle = -135 + (value / 100) * 270; // -135° to +135° range
+                knob.style.transform = `rotate(${angle}deg)`;
+            });
+        }
+
+        // Visualizer functions
+        function updateVisualizer() {
+            if (!analyser) return;
+            
+            const canvas = document.getElementById('visualizerCanvas');
+            const particleCanvas = document.getElementById('particleCanvas');
+            
+            if (!canvas || !particleCanvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const particleCtx = particleCanvas.getContext('2d');
+            
+            // Resize canvases
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            particleCanvas.width = particleCanvas.offsetWidth;
+            particleCanvas.height = particleCanvas.offsetHeight;
+            
+            // Get audio data
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Clear canvases
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            
+            // Draw spectrum analyzer
+            const barWidth = canvas.width / bufferLength * 2;
+            let x = 0;
+            
+            for (let i = 0; i < bufferLength; i++) {
+                const barHeight = (dataArray[i] / 255) * canvas.height * 0.8;
+                
+                const hue = (i / bufferLength) * 360;
+                ctx.fillStyle = `hsla(${hue}, 70%, 60%, 0.8)`;
+                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                
+                x += barWidth + 1;
+            }
+            
+            // Update and draw particles
+            particles.forEach(particle => {
+                const intensity = dataArray[particle.id % dataArray.length] / 255;
+                
+                // Update particle based on audio
+                particle.size = Math.max(1, 3 + intensity * 5);
+                particle.opacity = Math.min(1, 0.3 + intensity);
+                particle.hue = (particle.hue + intensity * 5) % 360;
+                
+                // Update position
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                
+                // Wrap around screen
+                if (particle.x < 0) particle.x = particleCanvas.width;
+                if (particle.x > particleCanvas.width) particle.x = 0;
+                if (particle.y < 0) particle.y = particleCanvas.height;
+                if (particle.y > particleCanvas.height) particle.y = 0;
+                
+                // Draw particle
+                particleCtx.beginPath();
+                particleCtx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                particleCtx.fillStyle = `hsla(${particle.hue}, 70%, 60%, ${particle.opacity})`;
+                particleCtx.fill();
+            });
+            
+            if (state.isPlaying) {
+                requestAnimationFrame(updateVisualizer);
+            }
+        }
+
+        // Event listeners setup
+        function setupEventListeners() {
+            // Transport controls
+            document.getElementById('playBtn').addEventListener('click', togglePlayback);
+            document.getElementById('stopBtn').addEventListener('click', stopPlayback);
+            
+            // BPM controls
+            document.getElementById('bpmSlider').addEventListener('input', (e) => {
+                state.bpm = parseInt(e.target.value);
+                document.getElementById('bpmInput').value = state.bpm;
+                document.getElementById('bpmDisplay').innerHTML = `<span>${state.bpm} BPM</span>`;
+                
+                if (state.isPlaying) {
+                    stopPlayback();
+                    startPlayback();
+                }
+            });
+            
+            document.getElementById('bpmInput').addEventListener('change', (e) => {
+                state.bpm = parseInt(e.target.value);
+                document.getElementById('bpmSlider').value = state.bpm;
+                document.getElementById('bpmDisplay').innerHTML = `<span>${state.bpm} BPM</span>`;
+                
+                if (state.isPlaying) {
+                    stopPlayback();
+                    startPlayback();
+                }
+            });
+            
+            // Master volume
+            document.getElementById('masterVolume').addEventListener('input', (e) => {
+                state.masterVolume = e.target.value / 100;
+            });
+            
+            // Effect controls
+            const effectSliders = ['reverb', 'delay', 'filter', 'distortion'];
+            effectSliders.forEach(effect => {
+                document.getElementById(effect + 'Slider').addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    state.tracks[state.selectedTrack].effects[effect] = value;
+                    document.getElementById(effect + 'Value').textContent = value + '%';
+                    updateKnobPositions();
+                });
+            });
+            
+            // Volume slider
+            document.getElementById('volumeSlider').addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                state.tracks[state.selectedTrack].volume = value / 100;
+                document.getElementById('volumeValue').textContent = value + '%';
+            });
+            
+            // API key input
+            document.getElementById('apiKey').addEventListener('input', handleApiKeyChange);
+            
+            // Chat input
+            document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            document.getElementById('chatInput').addEventListener('input', autoResizeTextarea);
+        }
+
+        // API key management
+        function handleApiKeyChange(e) {
+            const hasKey = e.target.value.trim().length > 0;
+            updateConnectionStatus(hasKey);
+            toggleChatUI(hasKey);
+        }
+
+        function updateConnectionStatus(connected) {
+            const connectionStatus = document.getElementById('connectionStatus');
+            
+            if (connected) {
+                connectionStatus.className = 'status-indicator status-live';
+                connectionStatus.innerHTML = '<div class="status-dot"></div><span>Connected</span>';
+            } else {
+                connectionStatus.className = 'status-indicator status-offline';
+                connectionStatus.innerHTML = '<div class="status-dot"></div><span>Disconnected</span>';
+            }
+        }
+
+        function toggleChatUI(enabled) {
+            document.getElementById('chatInput').disabled = !enabled;
+            document.getElementById('sendBtn').disabled = !enabled;
+        }
+
+        // Auto-resize textarea
+        function autoResizeTextarea() {
+            const textarea = document.getElementById('chatInput');
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        // OpenAI Chat Functions (Fixed)
+        async function createThread(apiKey) {
+            const response = await fetch('https://api.openai.com/v1/threads', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                    'OpenAI-Beta': 'assistants=v2'
+                },
+                body: JSON.stringify({})
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to create thread: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.id;
+        }
+
+        async function addMessageToThread(apiKey, threadId, content) {
+            // Create comprehensive beat state context
+            const beatContext = generateBeatStateContext();
+            
+            // Combine user message with current beat state
+            const contextualContent = `${content}
+
+CURRENT BEAT STATE:
+${beatContext}
+
+Please provide advice that's relevant to my current beat setup above.`;
+
+            const response = await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                    'OpenAI-Beta': 'assistants=v2'
+                },
+                body: JSON.stringify({
+                    role: 'user',
+                    content: contextualContent
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to add message: ${response.status}`);
+            }
+        }
+
+        async function createRun(apiKey, threadId) {
+            const response = await fetch(`https://api.openai.com/v1/threads/${threadId}/runs`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                    'OpenAI-Beta': 'assistants=v2'
+                },
+                body: JSON.stringify({
+                    assistant_id: 'asst_4BedIRzvL23VaqpF4vG08rQF'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to create run: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.id;
+        }
+
+        async function pollForCompletion(apiKey, threadId, runId) {
+            const maxAttempts = 30;
+            const pollInterval = 2000;
+
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                const response = await fetch(`https://api.openai.com/v1/threads/${threadId}/runs/${runId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'OpenAI-Beta': 'assistants=v2'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Polling failed: ${response.status}`);
+                }
+
+                const runStatus = await response.json();
+                
+                if (runStatus.status === 'completed') {
+                    return await getLatestMessage(apiKey, threadId);
+                } else if (runStatus.status === 'failed' || runStatus.status === 'cancelled' || runStatus.status === 'expired') {
+                    throw new Error(`Run ${runStatus.status}: ${runStatus.last_error?.message || 'Unknown error'}`);
+                }
+
+                await new Promise(resolve => setTimeout(resolve, pollInterval));
+            }
+
+            throw new Error('Timeout waiting for completion');
+        }
+
+        async function getLatestMessage(apiKey, threadId) {
+            const response = await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'OpenAI-Beta': 'assistants=v2'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to get messages: ${response.status}`);
+            }
+
+            const messages = await response.json();
+            const assistantMessage = messages.data.find(msg => msg.role === 'assistant');
+            
+            if (assistantMessage && assistantMessage.content && assistantMessage.content.length > 0) {
+                return assistantMessage.content[0].text.value;
+            } else {
+                return 'No response generated';
+            }
+        }
+
+        // Chat functions
+        async function sendMessage() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+
+            if (!apiKey) {
+                alert('Please enter your OpenAI API Key first');
+                return;
+            }
+
+            if (!message || state.isLoadingResponse) {
+                return;
+            }
+
+            // Add user message to chat with beat state indicator
+            const beatStateActive = state.tracks.some(track => track.pattern.some(step => step));
+            addMessage(message, 'user', false, beatStateActive);
+            chatInput.value = '';
+            autoResizeTextarea();
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            try {
+                state.isLoadingResponse = true;
+                updateSendButton(true);
+                updateBeatStateStatus(true);
+
+                let threadId = state.currentThreadId;
+                
+                // Create new thread if needed
+                if (!threadId) {
+                    threadId = await createThread(apiKey);
+                    state.currentThreadId = threadId;
+                }
+
+                // Add message to thread
+                await addMessageToThread(apiKey, threadId, message);
+
+                // Create and run assistant
+                const runId = await createRun(apiKey, threadId);
+                
+                // Poll for completion and get response
+                const response = await pollForCompletion(apiKey, threadId, runId);
+                
+                // Remove typing indicator and add response
+                hideTypingIndicator();
+                addMessage(response, 'assistant');
+
+                // Check if response contains beat patterns and apply them
+                if (response.toLowerCase().includes('pattern') || response.toLowerCase().includes('beat')) {
+                    attemptPatternExtraction(response);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                hideTypingIndicator();
+                addMessage(`Error: ${error.message}`, 'assistant', true);
+            } finally {
+                state.isLoadingResponse = false;
+                updateSendButton(false);
+                updateBeatStateStatus(false);
+            }
+        }
+
+        function sendQuickMessage(message) {
+            document.getElementById('chatInput').value = message;
+            autoResizeTextarea();
+            sendMessage();
+        }
+
+        function addMessage(content, role, isError = false, hasBeatState = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            // Remove welcome message if it exists
+            const welcomeMessage = chatMessages.querySelector('.welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            let beatStateIndicator = '';
+            if (hasBeatState && role === 'user') {
+                beatStateIndicator = '<div style="font-size: 11px; opacity: 0.8; margin-bottom: 5px; color: #60a5fa;">🎵 Sharing current beat state with AI</div>';
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="message-content ${isError ? 'error' : ''}">
+                    ${beatStateIndicator}
+                    ${content.replace(/\n/g, '<br>')}
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typingIndicator';
+            
+            typingDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function updateSendButton(loading) {
+            const sendBtn = document.getElementById('sendBtn');
+            
+            if (loading) {
+                sendBtn.innerHTML = '<div class="loading-spinner"></div>';
+                sendBtn.disabled = true;
+            } else {
+                sendBtn.innerHTML = 'Send';
+                sendBtn.disabled = false;
+            }
+        }
+
+        function updateBeatStateStatus(analyzing) {
+            const beatStateStatus = document.getElementById('beatStateStatus');
+            
+            if (analyzing) {
+                beatStateStatus.style.display = 'flex';
+                beatStateStatus.innerHTML = '<span>🧠 Analyzing Beat</span>';
+            } else {
+                const hasActivePatterns = state.tracks.some(track => track.pattern.some(step => step));
+                if (hasActivePatterns) {
+                    beatStateStatus.style.display = 'flex';
+                    beatStateStatus.innerHTML = '<span>🎵 AI Context Active</span>';
+                } else {
+                    beatStateStatus.style.display = 'none';
+                }
+            }
+        }
+
+        // Generate comprehensive beat state context for AI
+        function generateBeatStateContext() {
+            const currentTime = new Date().toLocaleTimeString();
+            
+            let context = `--- BEAT STUDIO STATE (${currentTime}) ---\n`;
+            context += `▶ PLAYBACK: ${state.isPlaying ? 'PLAYING' : 'STOPPED'}\n`;
+            context += `♫ BPM: ${state.bpm}\n`;
+            context += `🔊 MASTER VOLUME: ${Math.round(state.masterVolume * 100)}%\n`;
+            context += `📍 CURRENT STEP: ${state.currentStep + 1}/16\n\n`;
+            
+            context += `=== TRACK PATTERNS ===\n`;
+            state.tracks.forEach((track, index) => {
+                const instrument = INSTRUMENTS[track.instrument];
+                const activeSteps = track.pattern.map((active, step) => active ? (step + 1) : null).filter(s => s !== null);
+                const stepCount = activeSteps.length;
+                
+                context += `${instrument.emoji} ${track.name.toUpperCase()}:\n`;
+                context += `  Pattern: [${track.pattern.map(s => s ? '●' : '○').join('')}]\n`;
+                context += `  Active Steps: ${activeSteps.length > 0 ? activeSteps.join(', ') : 'None'} (${stepCount}/16)\n`;
+                context += `  Volume: ${Math.round(track.volume * 100)}% | `;
+                context += `${track.muted ? 'MUTED' : 'ACTIVE'} | `;
+                context += `${track.soloed ? 'SOLOED' : 'Normal'}\n`;
+                
+                // Effects summary
+                const effects = track.effects;
+                const activeEffects = [];
+                if (effects.reverb > 0) activeEffects.push(`Reverb ${effects.reverb}%`);
+                if (effects.delay > 0) activeEffects.push(`Delay ${effects.delay}%`);
+                if (effects.filter !== 50) activeEffects.push(`Filter ${effects.filter}%`);
+                if (effects.distortion > 0) activeEffects.push(`Distortion ${effects.distortion}%`);
+                
+                context += `  Effects: ${activeEffects.length > 0 ? activeEffects.join(', ') : 'None'}\n\n`;
+            });
+            
+            // Pattern analysis
+            const totalActiveSteps = state.tracks.reduce((sum, track) => sum + track.pattern.filter(s => s).length, 0);
+            const complexity = totalActiveSteps < 10 ? 'Simple' : totalActiveSteps < 20 ? 'Medium' : totalActiveSteps < 30 ? 'Complex' : 'Very Complex';
+            
+            context += `=== PATTERN ANALYSIS ===\n`;
+            context += `Total Active Steps: ${totalActiveSteps}/96\n`;
+            context += `Complexity Level: ${complexity}\n`;
+            context += `Selected Track: ${INSTRUMENTS[state.tracks[state.selectedTrack].instrument].emoji} ${state.tracks[state.selectedTrack].name}\n`;
+            
+            // Rhythm analysis
+            const kickPattern = state.tracks[0].pattern;
+            const snarePattern = state.tracks[1].pattern;
+            const hihatPattern = state.tracks[2].pattern;
+            
+            if (kickPattern.some(s => s) || snarePattern.some(s => s) || hihatPattern.some(s => s)) {
+                context += `\n=== RHYTHM ANALYSIS ===\n`;
+                
+                // Detect common patterns
+                if (kickPattern[0] && kickPattern[4] && kickPattern[8] && kickPattern[12]) {
+                    context += `Kick: Four-on-floor pattern detected\n`;
+                } else if (kickPattern[0] && !kickPattern[4] && kickPattern[8] && !kickPattern[12]) {
+                    context += `Kick: Hip-hop/trap pattern detected\n`;
+                } else {
+                    context += `Kick: Custom pattern\n`;
+                }
+                
+                if (snarePattern[4] && snarePattern[12]) {
+                    context += `Snare: Standard backbeat (2 & 4)\n`;
+                } else {
+                    const snareSteps = snarePattern.map((s, i) => s ? i + 1 : null).filter(s => s);
+                    context += `Snare: Custom hits on steps ${snareSteps.join(', ')}\n`;
+                }
+                
+                const hihatCount = hihatPattern.filter(s => s).length;
+                if (hihatCount >= 8) {
+                    context += `Hi-hat: Dense pattern (${hihatCount} hits)\n`;
+                } else if (hihatCount >= 4) {
+                    context += `Hi-hat: Medium pattern (${hihatCount} hits)\n`;
+                } else if (hihatCount > 0) {
+                    context += `Hi-hat: Sparse pattern (${hihatCount} hits)\n`;
+                } else {
+                    context += `Hi-hat: No pattern\n`;
+                }
+            }
+            
+            return context;
+        }
+
+        // Enhanced pattern extraction with context awareness
+        function attemptPatternExtraction(response) {
+            const lowerResponse = response.toLowerCase();
+            const currentBeatContext = generateBeatStateContext().toLowerCase();
+            
+            // More intelligent pattern detection based on current state and AI response
+            if (lowerResponse.includes('trap') && lowerResponse.includes('beat')) {
+                applyTrapPattern();
+                addMessage("🔥 Applied trap pattern to your sequencer!", 'assistant');
+            } else if (lowerResponse.includes('house') && lowerResponse.includes('beat')) {
+                applyHousePattern();
+                addMessage("🏠 Applied house pattern to your sequencer!", 'assistant');
+            } else if (lowerResponse.includes('hip-hop') || lowerResponse.includes('hip hop')) {
+                applyHipHopPattern();
+                addMessage("🎤 Applied hip-hop pattern to your sequencer!", 'assistant');
+            } else if (lowerResponse.includes('techno')) {
+                applyTechnoPattern();
+                addMessage("⚡ Applied techno pattern to your sequencer!", 'assistant');
+            } else if (lowerResponse.includes('clear') && lowerResponse.includes('pattern')) {
+                clearAllPatterns();
+                addMessage("🧹 Cleared all patterns as requested!", 'assistant');
+            } else if (lowerResponse.includes('kick') && (lowerResponse.includes('add') || lowerResponse.includes('more'))) {
+                enhanceKickPattern();
+                addMessage("🥾 Enhanced kick pattern!", 'assistant');
+            } else if (lowerResponse.includes('hi-hat') || lowerResponse.includes('hihat')) {
+                if (lowerResponse.includes('roll') || lowerResponse.includes('fast')) {
+                    addHiHatRoll();
+                    addMessage("🔸 Added hi-hat roll!", 'assistant');
+                }
+            }
+        }
+
+        // Additional pattern functions
+        function clearAllPatterns() {
+            state.tracks.forEach(track => {
+                track.pattern = Array(16).fill(false);
+            });
+            updateSequencerDisplay();
+        }
+
+        function enhanceKickPattern() {
+            // Add more kick hits based on current pattern
+            const kickTrack = state.tracks[0];
+            if (!kickTrack.pattern[0]) kickTrack.pattern[0] = true; // Always on 1
+            if (!kickTrack.pattern[8]) kickTrack.pattern[8] = true; // Add on 9
+            if (!kickTrack.pattern[6]) kickTrack.pattern[6] = true; // Add syncopation
+            updateSequencerDisplay();
+        }
+
+        function addHiHatRoll() {
+            // Create a hi-hat roll pattern
+            const hihatTrack = state.tracks[2];
+            for (let i = 12; i < 16; i++) {
+                hihatTrack.pattern[i] = true;
+            }
+            updateSequencerDisplay();
+        }
+
+        // Pre-defined beat patterns
+        function applyTrapPattern() {
+            // Classic trap pattern
+            state.tracks[0].pattern = [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]; // Kick
+            state.tracks[1].pattern = [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false]; // Snare
+            state.tracks[2].pattern = [true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true]; // Hi-hat
+            updateSequencerDisplay();
+            addMessage("Applied classic trap beat pattern! 🔥", 'assistant');
+        }
+
+        function applyHousePattern() {
+            // Four-on-the-floor house pattern
+            state.tracks[0].pattern = [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]; // Kick
+            state.tracks[1].pattern = [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false]; // Snare
+            state.tracks[2].pattern = [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false]; // Hi-hat
+            updateSequencerDisplay();
+            addMessage("Applied classic house beat pattern! 🏠", 'assistant');
+        }
+
+        function applyHipHopPattern() {
+            // Classic hip-hop boom bap pattern
+            state.tracks[0].pattern = [true, false, false, false, false, false, true, false, false, true, false, false, false, false, false, false]; // Kick
+            state.tracks[1].pattern = [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false]; // Snare
+            state.tracks[2].pattern = [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false]; // Hi-hat
+            updateSequencerDisplay();
+            addMessage("Applied classic hip-hop boom bap pattern! 🎤", 'assistant');
+        }
+
+        function applyTechnoPattern() {
+            // Classic techno 4/4 pattern
+            state.tracks[0].pattern = [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]; // Kick
+            state.tracks[1].pattern = [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false]; // Snare
+            state.tracks[2].pattern = [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false]; // Hi-hat
+            updateSequencerDisplay();
+            addMessage("Applied classic techno 4/4 pattern! ⚡", 'assistant');
+        }
+
+        // Initialize application
+        function initializeApp() {
+            setupEventListeners();
+            updateSequencerDisplay();
+            updateTransportDisplay();
+            updateEffectsPanel();
+            
+            // Start visualizer animation loop
+            function animate() {
+                if (state.isPlaying) {
+                    updateVisualizer();
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Make functions globally available
+        window.toggleStep = toggleStep;
+        window.toggleMute = toggleMute;
+        window.toggleSolo = toggleSolo;
+        window.selectTrack = selectTrack;
+        window.sendMessage = sendMessage;
+        window.sendQuickMessage = sendQuickMessage;
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+.DS_Store
+/node_modules/
+
+# React Router
+/.react-router/
+/build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Streamlit
+.streamlit/
+
+# Environment variables
+.env
+
+# Audio files (temporary)
+*.wav
+*.mp3
+*.m4a
+*.flac
+
+# Reports and outputs
+*_report.pdf
+*_analysis.csv
+*_analysis.json
+
+# Temporary files
+/tmp/

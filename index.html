@@ -28,6 +28,7 @@
         /* Header */
         .header {
             background: rgba(30, 41, 59, 0.95);
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid #334155;
             padding: 15px 20px;
@@ -112,8 +113,8 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         /* API Key Section */
@@ -383,8 +384,8 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .message.user {
@@ -448,8 +449,8 @@
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
 
         @keyframes typing {
-            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-            40% { transform: scale(1); opacity: 1; }
+            0%, 80%, 100% { opacity: 0.5; }
+            40% { opacity: 1; }
         }
 
         /* Chat Input */
@@ -652,68 +653,92 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(71, 85, 105, 1);
         }
-    </style>
+    .bpm-indicator {
+        background: rgba(168, 85, 247, 0.2);
+        border-color: rgba(168, 85, 247, 0.5);
+        color: #a855f7;
+    }
+    .beatstate-indicator {
+        display: none;
+    }
+    .sequencer-title {
+        color: #f1f5f9;
+        margin-bottom: 15px;
+    }
+    .visually-hidden {
+        display: none;
+    }
+    .selected-track-name {
+        font-weight: bold;
+        color: #f1f5f9;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+</style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-content">
-                <h1>🚀 Ultimate Beat Studio Pro</h1>
-                <div class="status-indicators">
-                    <div id="playbackStatus" class="status-indicator status-offline">
+                    <div id="bpmDisplayHeader" class="status-indicator bpm-indicator">
+                        <span>128 BPM</span>
+                    </div>
+                    <div id="beatStateStatusHeader" class="status-indicator bpm-indicator beatstate-indicator">
+                        <span>🧠 AI Context</span>
+                    </div>
                         <div class="status-dot"></div>
                         <span>OFFLINE</span>
                     </div>
-                    <div id="bpmDisplay" class="status-indicator" style="background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.5); color: #a855f7;">
+                    <div id="bpmDisplayMain" class="status-indicator" style="background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.5); color: #a855f7;">
                         <span>128 BPM</span>
                     </div>
-                    <div id="beatStateStatus" class="status-indicator" style="background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.5); color: #a855f7; display: none;">
+                    <div id="beatStateStatusMain" class="status-indicator" style="background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.5); color: #a855f7; display: none;">
                         <span>🧠 AI Context</span>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- API Key Section -->
-        <div class="api-section">
-            <div class="api-container">
+                    <div id="bpmDisplay" class="status-indicator bpm-indicator">
+                        <span>128 BPM</span>
+                    </div>
+                    <div id="beatStateStatus" class="status-indicator bpm-indicator beatstate-indicator">
+                        <span>🧠 AI Context</span>
+                    </div>
                 <input 
                     type="password" 
                     id="apiKey" 
                     class="api-key-input" 
                     placeholder="Enter your OpenAI API Key to enable AI beat generation..."
                 >
-                <div class="status-indicator" id="connectionStatus">
-                    <div class="status-dot"></div>
-                    <span>Disconnected</span>
+                        <input type="number" id="bpmInputHeader" class="bpm-input" value="128" min="60" max="200" title="Beats per minute" placeholder="BPM">
+                    <div id="connectionStatus" class="status-indicator status-offline">
+                        <div class="status-dot"></div>
+                        <span>Disconnected</span>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Main Content -->
+                        <button id="playBtnMain" class="transport-btn" type="button">▶ Play</button>
+                        <button id="stopBtnMain" class="transport-btn" type="button">⏹ Stop</button>
+                        <button id="recordBtnMain" class="transport-btn" type="button">⏺ Record</button>
         <div class="main-content">
             <!-- Left Panel - Beat Sequencer -->
-            <div class="left-panel">
+                    <h3 class="sequencer-title">16-Step Sequencer</h3>
                 <!-- Transport Controls -->
-                <div class="transport-controls">
+                        <input type="number" id="bpmInputMainPanel" class="bpm-input" value="128" min="60" max="200" title="Beats per minute" placeholder="BPM">
                     <div class="transport-buttons">
                         <button id="playBtn" class="transport-btn">▶ Play</button>
                         <button id="stopBtn" class="transport-btn">⏹ Stop</button>
-                        <button id="recordBtn" class="transport-btn">⏺ Record</button>
+                        <input type="range" id="masterVolume" min="0" max="100" value="80" class="volume-slider" title="Master volume" placeholder="Master Volume">
                     </div>
                     <div class="bpm-control">
                         <label for="bpmSlider">BPM:</label>
                         <input type="range" id="bpmSlider" min="60" max="200" value="128" class="volume-slider">
                         <input type="number" id="bpmInput" class="bpm-input" value="128" min="60" max="200">
-                    </div>
-                    <div class="bpm-control">
-                        <label for="masterVolume">Master:</label>
+                    <h3 class="sequencer-title">16-Step Sequencer</h3>
+                        <button id="stopBtn" class="transport-btn" type="button">⏹ Stop</button>
+                        <button id="recordBtn" class="transport-btn" type="button">⏺ Record</button>
                         <input type="range" id="masterVolume" min="0" max="100" value="80" class="volume-slider">
                     </div>
                 </div>
 
-                <!-- Sequencer Grid -->
+                        <input type="number" id="bpmInputMain" class="bpm-input" value="128" min="60" max="200" title="Beats per minute" placeholder="BPM">
                 <div class="sequencer-section">
                     <h3 style="color: #f1f5f9; margin-bottom: 15px;">16-Step Sequencer</h3>
                     <div id="trackContainer">
@@ -723,20 +748,20 @@
             </div>
 
             <!-- Center Panel - Visualizer & Chat -->
-            <div class="center-panel">
+                    <h3 class="sequencer-title">16-Step Sequencer</h3>
                 <!-- Visualizer -->
                 <div class="visualizer-container">
                     <canvas id="visualizerCanvas" class="visualizer-canvas"></canvas>
                     <canvas id="particleCanvas" class="visualizer-canvas"></canvas>
                 </div>
-
-                <!-- Chat Container -->
-                <div class="chat-container">
-                    <div class="chat-messages" id="chatMessages">
-                        <div class="welcome-message">
-                            <h2>Ultimate Beat Studio Pro</h2>
-                            <p>Create professional beats with AI assistance, multi-track sequencing, real-time effects, and spectacular visualizations!</p>
-                            
+                                <button class="quick-action-btn" type="button" onclick="sendQuickMessage('Create a trap beat with heavy 808s and rolling hi-hats')">
+                                    ⚡ Generate Trap Beat
+                                </button>
+                                <button class="quick-action-btn" type="button" onclick="sendQuickMessage('Give me mixing tips for punchy drums')">
+                                    🎛️ Mixing Tips
+                                </button>
+                                <button class="quick-action-btn" type="button" onclick="sendQuickMessage('Suggest creative pattern variations')">
+                                    ✨ Pattern Ideas
                             <div class="quick-actions">
                                 <button class="quick-action-btn" onclick="sendQuickMessage('Create a trap beat with heavy 808s and rolling hi-hats')">
                                     ⚡ Generate Trap Beat
@@ -746,37 +771,42 @@
                                 </button>
                                 <button class="quick-action-btn" onclick="sendQuickMessage('Suggest creative pattern variations')">
                                     ✨ Pattern Ideas
+                                <button class="quick-action-btn" type="button" onclick="sendQuickMessage('Create a trap beat with heavy 808s and rolling hi-hats')">
+                                    ⚡ Generate Trap Beat
                                 </button>
-                                <button class="quick-action-btn" onclick="sendQuickMessage('How do I create dynamic arrangements?')">
+                                <button class="quick-action-btn" type="button" onclick="sendQuickMessage('Give me mixing tips for punchy drums')">
+                                    🎛️ Mixing Tips
+                                </button>
+                        <button id="sendBtnMain" class="send-btn" type="button" onclick="sendMessage()" disabled>
+                            Send
+                        </button>
+                        <label for="chatInput" class="visually-hidden">Chat Input</label>
                                     🎵 Arrangement Tips
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="chat-input-container">
-                        <div class="chat-input-wrapper">
-                            <textarea 
-                                id="chatInput" 
+                                id="chatInput"
                                 class="chat-input" 
                                 placeholder="Ask about beat production, request patterns, get mixing advice..."
+                                rows="1"></textarea>
                                 rows="1"
-                                disabled
-                            ></textarea>
-                            <button id="sendBtn" class="send-btn" onclick="sendMessage()" disabled>
-                                Send
-                            </button>
-                        </div>
+                        <button id="sendBtn" class="send-btn" onclick="sendMessage()" disabled>
+                            Send
+                        </button>
+                        <label for="chatInput" style="display:none;">Chat Input</label>
+                        <textarea 
+                            id="chatInput"
+                            class="chat-input" 
+                    <div id="selectedTrackName" class="selected-track-name">
+                        🎵 Track Name
                     </div>
-                </div>
-            </div>
-
-            <!-- Right Panel - Effects -->
-            <div class="right-panel">
-                <div class="effects-section">
+                        <button id="sendBtn" class="send-btn" type="button" onclick="sendMessage()" disabled>
+                            Send
+                        </button>
                     <h3>Track Effects</h3>
-                    <div id="selectedTrackName" style="color: #94a3b8; margin-bottom: 20px;">Select a track</div>
-                    
+                        <input type="range" id="delaySliderTrack" min="0" max="100" value="0" class="volume-slider effect-slider" title="Delay amount" placeholder="Delay">
+                    <div id="selectedTrackName2" style="font-weight: bold; color: #f1f5f9; margin-bottom: 12px; text-align: center;">
+                        🎵 Track Name
+                        <input type="range" id="reverbSliderTrack" min="0" max="100" value="0" class="volume-slider effect-slider" title="Reverb amount" placeholder="Reverb">
+                        🎵 Track Name
+                        <input type="range" id="reverbSlider" min="0" max="100" value="0" class="volume-slider effect-slider" title="Reverb amount" placeholder="Reverb">
                     <div class="effect-knob">
                         <div class="knob-label">
                             <span>Reverb</span>
@@ -784,10 +814,11 @@
                         </div>
                         <div class="knob-container">
                             <div class="knob" id="reverbKnob"></div>
-                        </div>
-                        <input type="range" id="reverbSlider" min="0" max="100" value="0" class="volume-slider" style="margin-top: 10px;">
-                    </div>
-
+                        <input type="range" id="filterSlider" min="0" max="100" value="50" class="volume-slider effect-slider" title="Filter amount" placeholder="Filter">
+                        <input type="range" id="filterSliderTrack" min="0" max="100" value="50" class="volume-slider effect-slider" title="Filter amount" placeholder="Filter">
+                        <input type="range" id="delaySliderTrack" min="0" max="100" value="0" class="volume-slider effect-slider" title="Delay amount" placeholder="Delay">
+                        <input type="range" id="filterSlider" min="0" max="100" value="50" class="volume-slider effect-slider" title="Filter amount" placeholder="Filter">
+                        <input type="range" id="delaySliderTrack" min="0" max="100" value="0" class="volume-slider effect-slider" title="Delay amount" placeholder="Delay">
                     <div class="effect-knob">
                         <div class="knob-label">
                             <span>Delay</span>
@@ -796,28 +827,28 @@
                         <div class="knob-container">
                             <div class="knob" id="delayKnob"></div>
                         </div>
-                        <input type="range" id="delaySlider" min="0" max="100" value="0" class="volume-slider" style="margin-top: 10px;">
-                    </div>
-
+                        <input type="range" id="filterSliderTrack2" min="0" max="100" value="50" class="volume-slider effect-slider" title="Filter amount" placeholder="Filter">
                     <div class="effect-knob">
                         <div class="knob-label">
                             <span>Filter</span>
                             <span id="filterValue">50%</span>
                         </div>
                         <div class="knob-container">
-                            <div class="knob" id="filterKnob"></div>
                         </div>
-                        <input type="range" id="filterSlider" min="0" max="100" value="50" class="volume-slider" style="margin-top: 10px;">
+                        <input type="range" id="trackVolumeSlider" min="0" max="100" value="80" class="volume-slider" title="Track volume" placeholder="Volume">
+                        <input type="range" id="filterSliderKnob" min="0" max="100" value="50" class="volume-slider" style="margin-top: 10px;">
                     </div>
-
+                        <input type="range" id="distortionSliderTrack1" min="0" max="100" value="0" class="volume-slider effect-slider" title="Distortion amount" placeholder="Distortion">
+                    </div>
+                        <input type="range" id="distortionSliderTrack" min="0" max="100" value="0" class="volume-slider effect-slider" title="Distortion amount" placeholder="Distortion">
                     <div class="effect-knob">
                         <div class="knob-label">
                             <span>Distortion</span>
                             <span id="distortionValue">0%</span>
                         </div>
-                        <div class="knob-container">
-                            <div class="knob" id="distortionKnob"></div>
-                        </div>
+                        <input type="range" id="trackVolumeSlider" min="0" max="100" value="80" class="volume-slider" title="Track volume" placeholder="Volume">
+                        <input type="range" id="distortionSlider" min="0" max="100" value="0" class="volume-slider" style="margin-top: 10px;">
+                    </div>
                         <input type="range" id="distortionSlider" min="0" max="100" value="0" class="volume-slider" style="margin-top: 10px;">
                     </div>
 
@@ -1227,31 +1258,42 @@
                 state.bpm = parseInt(e.target.value);
                 document.getElementById('bpmInput').value = state.bpm;
                 document.getElementById('bpmDisplay').innerHTML = `<span>${state.bpm} BPM</span>`;
+                document.getElementById('bpmDisplayHeader').innerHTML = `<span>${state.bpm} BPM</span>`;
+                document.getElementById('bpmDisplayMain').innerHTML = `<span>${state.bpm} BPM</span>`;
                 
                 if (state.isPlaying) {
                     stopPlayback();
                     startPlayback();
                 }
             });
-            
-            document.getElementById('bpmInput').addEventListener('change', (e) => {
+
+            document.getElementById('bpmInputHeader').addEventListener('change', (e) => {
                 state.bpm = parseInt(e.target.value);
                 document.getElementById('bpmSlider').value = state.bpm;
+                document.getElementById('bpmInputMain').value = state.bpm;
                 document.getElementById('bpmDisplay').innerHTML = `<span>${state.bpm} BPM</span>`;
+                document.getElementById('bpmDisplayHeader').innerHTML = `<span>${state.bpm} BPM</span>`;
+                document.getElementById('bpmDisplayMain').innerHTML = `<span>${state.bpm} BPM</span>`;
                 
                 if (state.isPlaying) {
                     stopPlayback();
                     startPlayback();
                 }
             });
-            
-            // Master volume
-            document.getElementById('masterVolume').addEventListener('input', (e) => {
-                state.masterVolume = e.target.value / 100;
+
+            document.getElementById('bpmInputMain').addEventListener('change', (e) => {
+                state.bpm = parseInt(e.target.value);
+                document.getElementById('bpmSlider').value = state.bpm;
+                document.getElementById('bpmInputHeader').value = state.bpm;
+                document.getElementById('bpmDisplay').innerHTML = `<span>${state.bpm} BPM</span>`;
+                document.getElementById('bpmDisplayHeader').innerHTML = `<span>${state.bpm} BPM</span>`;
+                document.getElementById('bpmDisplayMain').innerHTML = `<span>${state.bpm} BPM</span>`;
+                
+                if (state.isPlaying) {
+                    stopPlayback();
+                    startPlayback();
+                }
             });
-            
-            // Effect controls
-            const effectSliders = ['reverb', 'delay', 'filter', 'distortion'];
             effectSliders.forEach(effect => {
                 document.getElementById(effect + 'Slider').addEventListener('input', (e) => {
                     const value = parseInt(e.target.value);
@@ -1280,6 +1322,41 @@
             });
             
             document.getElementById('chatInput').addEventListener('input', autoResizeTextarea);
+            
+            // Lyric analysis
+            const lyricInput = document.getElementById('lyric-input');
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const analyzeStatus = document.getElementById('analyze-status');
+
+            analyzeBtn.addEventListener('click', async () => {
+                const lyrics = lyricInput.value.trim();
+                if (!lyrics) {
+                    analyzeStatus.textContent = 'Please paste lyrics.';
+                    return;
+                }
+                analyzeStatus.textContent = 'Analyzing...';
+                // Simulate API call (replace with real fetch to backend)
+                setTimeout(() => {
+                    // Example: update sentiment panel with fake data
+                    updateContent('sentiment', {
+                        title: 'Sentiment Analysis (Live)',
+                        description: 'Live analysis of your lyrics using TextBlob. (Demo data shown)',
+                        visualization: 'chart',
+                        chartType: 'doughnut',
+                        chartData: {
+                            labels: ['Positive', 'Negative', 'Neutral'],
+                            datasets: [{
+                                label: 'Sentiment Breakdown',
+                                data: [Math.floor(Math.random()*100), Math.floor(Math.random()*50), Math.floor(Math.random()*50)],
+                                backgroundColor: ['#4ade80', '#f87171', '#9ca3af'],
+                                borderColor: '#1f2937',
+                                borderWidth: 4,
+                            }]
+                        }
+                    });
+                    analyzeStatus.textContent = 'Analysis complete.';
+                }, 1200);
+            });
         }
 
         // API key management
